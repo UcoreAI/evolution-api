@@ -26,10 +26,13 @@ if (command.includes('rmdir') && existsSync('prisma\\migrations')) {
 } else if (command.includes('rmdir')) {
   console.warn(`Directory 'prisma\\migrations' does not exist, skipping removal.`);
 }
-
-try {
-  execSync(command, { stdio: 'inherit' });
-} catch (error) {
-  console.error(`Error executing command: ${command}`);
-  process.exit(1);
+} else if (command.includes('rmdir')) {
+  console.warn('Directory `prisma/migrations` does not exist, skipping removal...');
 }
+
+// try {
+//   execSync(command, { stdio: 'inherit' });
+// } catch (error) {
+//   console.error(`Error executing command: ${command}`);
+//   process.exit(1);
+// }
