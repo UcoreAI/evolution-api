@@ -1,18 +1,34 @@
-export_env_vars() {
-    if [ -f .env ]; then
-        while IFS='=' read -r key value; do
-            if [[ -z "$key" || "$key" =~ ^\s*# || -z "$value" ]]; then
-                continue
-            fi
+#!/bin/bash
 
-            key=$(echo "$key" | tr -d '[:space:]')
-            value=$(echo "$value" | tr -d '[:space:]')
-            value=$(echo "$value" | tr -d "'" | tr -d "\"")
+# Try to load env_functions.sh, but continue if it fails
+source /Docker/scripts/env_functions.sh || echo "Warning: env_functions.sh not found, using default settings"
 
-            export "$key=$value"
-        done < .env
-    else
-        echo ".env file not found"
+# Set a default DATABASE_PROVIDER if it's not set
+if [ -z "${DATABASE_PROVIDER}" ]; then
+    DATABASE_PROVIDER="postgres"
+fi
+
+# Set a default DATABASE_URL if it's not set
+if [ -z "${DATABASE_URL}" ]; then
+    DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
+fi
+
+if [ "${DOCKER_ENV}" = "true" ]; then
+    export_env_vars
+fi
+
+if [[ "${DATABASE_PROVIDER}" == "postgres" || "${DATABASE_PROVIDER}" == "mysql" ]]; then
+    export DATABASE_URL
+    echo "Generating database for ${DATABASE_PROVIDER} Database Provider"
+    echo "DATABASE_URL=${DATABASE_URL}"
+    npm run generate --schema=prisma/prisma.schema
+    if [ $? -ne 0 ]; then
+        echo "Prisma generate failed"
         exit 1
+    else
+        echo "Prisma generate succeeded"
     fi
-}
+else
+    echo "Error: Database provider ${DATABASE_PROVIDER} invalid."
+    exit 1
+fi
