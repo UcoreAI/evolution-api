@@ -20,7 +20,7 @@ COPY ./manager ./manager
 COPY ./.env.example ./.env
 COPY ./runWithProvider.js ./
 COPY ./tsup.config.ts ./
-
+COPY ./Docker/scripts/env_functions.sh /Docker/scripts/
 COPY ./Docker ./Docker
 
 RUN chmod +x ./Docker/scripts/* && dos2unix ./Docker/scripts/*
